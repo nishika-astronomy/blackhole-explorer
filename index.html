@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Black Hole Explorer - Relativistic Physics Simulator</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #000000;
+      overflow-x: hidden;
+    }
+
+    .monospace {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #000000;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e1b4b;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #312e81;
+    }
+
+    /* Range slider styling */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: #111827;
+      height: 6px;
+      border-radius: 9999px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      background: #3b82f6;
+      border: 2px solid #ffffff;
+      border-radius: 9999px;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+      transition: all 0.1s ease-in-out;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      background: #60a5fa;
+    }
+
+    /* Immersive futuristic card panel style */
+    .museum-card {
+      background: rgba(8, 8, 16, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(59, 130, 246, 0.12);
+      box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.85);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .museum-card:hover {
+      border-color: rgba(59, 130, 246, 0.3);
+      box-shadow: 0 15px 45px -5px rgba(59, 130, 246, 0.08);
+    }
+
+    /* Live horizon flash overlay */
+    #impact-flash {
+      pointer-events: none;
+      transition: opacity 0.4s ease-out;
+    }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
+
+  <!-- Sudden Horizon Collision Flash Screen Overlay -->
+  <div id="impact-flash" class="fixed inset-0 bg-blue-500/40 opacity-0 z-50"></div>
+
+  <!-- Interactive Science Museum Alert Center banner -->
+  <div id="event-log-banner" class="bg-indigo-950/90 border-b border-indigo-500/20 text-indigo-200 px-6 py-2.5 text-center text-xs font-semibold tracking-wider uppercase transition-all duration-500 flex items-center justify-center gap-2 relative">
+    <span class="flex h-2 w-2 relative">
+      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+      <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+    </span>
+    <span id="banner-text">Quantum Sensors Online: Relativistic Spacetime simulation tracking active.</span>
+  </div>
+
+  <!-- Exhibit Header Navigation -->
+  <header class="bg-black/95 border-b border-white/5 sticky top-0 z-40 backdrop-blur-md px-6 py-4">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="p-2.5 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-xl shadow-lg shadow-blue-500/20">
+          <i data-lucide="orbit" class="w-6 h-6 text-white animate-spin" style="animation-duration: 20s;"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl md:text-2xl font-black tracking-widest bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-500 bg-clip-text text-transparent">
+              BLACK HOLE EXPLORER
+            </h1>
+            <span class="bg-blue-500/10 border border-blue-500/30 text-[9px] text-blue-400 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-widest animate-pulse">
+              Portfolio Edition
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">General Relativity Visualization Engine & Schwarzschild Geometries</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <button onclick="document.getElementById('manual-section').scrollIntoView({ behavior: 'smooth' })" class="flex items-center gap-2 px-3.5 py-2 bg-slate-900/80 hover:bg-slate-850 border border-white/10 rounded-lg text-xs font-semibold text-slate-300 transition">
+          <i data-lucide="info" class="w-4 h-4 text-blue-400"></i>
+          <span>Explanations</span>
+        </button>
+        <button onclick="resetSimulation()" class="flex items-center gap-2 px-3.5 py-2 bg-red-950/40 hover:bg-red-900/40 border border-red-500/20 rounded-lg text-xs font-semibold text-red-300 transition">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+          <span>Reset Exhibit</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Interactive Simulator Grid Workspace -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- LEFT PANEL: Sliders, Control Settings & Clocks (4 Columns) -->
+    <section class="lg:col-span-4 flex flex-col gap-6">
+      
+      <!-- Control Settings Card -->
+      <div class="museum-card rounded-2xl p-5">
+        <div class="flex items-center gap-2 mb-4 pb-3 border-b border-white/5">
+          <i data-lucide="settings" class="text-blue-400 w-5 h-5"></i>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Simulation Controls</h2>
+        </div>
+
+        <div class="space-y-5">
+          <!-- Mass Setting -->
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Black Hole Mass</label>
+              <span class="monospace text-xs text-blue-400 bg-blue-950/40 border border-blue-900/30 px-2 py-0.5 rounded" id="mass-lbl">15 M☉</span>
+            </div>
+            <p class="text-[10px] text-slate-500 mb-2">Adjust core mass in Solar Units ($M_{\odot}$). Larger masses expand the event horizon ($R_s$).</p>
+            <input type="range" id="mass-slider" min="1" max="100" step="1" value="15" class="w-full">
+            <div class="flex justify-between text-[9px] text-slate-600 mt-1 monospace">
+              <span>1 M☉ (Stellar)</span>
+              <span>50 M☉</span>
+              <span>100 M☉ (Supermassive)</span>
+            </div>
+          </div>
+
+          <!-- Observer Distance Setting -->
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Observer Distance ($r$)</label>
+              <span class="monospace text-xs text-purple-400 bg-purple-950/40 border border-purple-900/30 px-2 py-0.5 rounded" id="dist-lbl">3.50 Rs</span>
+            </div>
+            <p class="text-[10px] text-slate-500 mb-2">The location of your virtual platform in multiples of Schwarzschild Radius ($R_s$).</p>
+            <input type="range" id="dist-slider" min="1.1" max="15.0" step="0.1" value="3.5" class="w-full">
+            <div class="flex justify-between text-[9px] text-slate-600 mt-1 monospace">
+              <span>1.1 Rs (Photon Orbit)</span>
+              <span>8.0 Rs</span>
+              <span>15.0 Rs (Boundary)</span>
+            </div>
+          </div>
+
+          <!-- Number of orbiting objects setting -->
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Orbiting Particles</label>
+              <span class="monospace text-xs text-teal-400 bg-teal-950/40 border border-teal-900/30 px-2 py-0.5 rounded" id="objects-lbl">30</span>
+            </div>
+            <input type="range" id="objects-slider" min="0" max="100" step="5" value="30" class="w-full">
+          </div>
+
+          <!-- Simulation speed setting -->
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Simulation Speed</label>
+              <span class="monospace text-xs text-amber-400 bg-amber-950/40 border border-amber-900/30 px-2 py-0.5 rounded" id="speed-lbl">1.0x</span>
+            </div>
+            <input type="range" id="speed-slider" min="0.1" max="2.0" step="0.1" value="1.0" class="w-full">
+          </div>
+
+          <!-- Control Actions and Toggle triggers -->
+          <div class="pt-4 border-t border-white/5 space-y-3.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Render Orbit Trails</span>
+              <button id="trails-btn" onclick="toggleTrails()" class="w-11 h-6 bg-blue-600 rounded-full p-1 transition-all duration-200 focus:outline-none flex items-center justify-end">
+                <span class="w-4 h-4 rounded-full bg-white shadow-md"></span>
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Accretion Disk</span>
+              <button id="disk-btn" onclick="toggleAccretionDisk()" class="w-11 h-6 bg-blue-600 rounded-full p-1 transition-all duration-200 focus:outline-none flex items-center justify-end">
+                <span class="w-4 h-4 rounded-full bg-white shadow-md"></span>
+              </button>
+            </div>
+
+            <div class="pt-2">
+              <button onclick="triggerDrop()" class="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:translate-y-0.5 text-white font-black uppercase text-xs tracking-wider rounded-xl shadow-lg shadow-blue-500/20 transition-all">
+                <i data-lucide="package-down" class="w-4 h-4"></i>
+                Drop Object
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Falling Object Telemetry Dashboard (Hidden unless active) -->
+      <div id="telemetry-card" class="museum-card rounded-2xl p-4 border border-orange-500/20 hidden transition-all duration-300">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="flex h-2.5 w-2.5 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500"></span>
+            </span>
+            <span class="text-xs font-bold text-orange-400 uppercase tracking-widest">Active Probe Telemetry</span>
+          </div>
+          <span class="monospace text-[10px] bg-orange-950/40 text-orange-300 border border-orange-900/30 px-2 py-0.5 rounded" id="probe-status">Falling</span>
+        </div>
+
+        <div class="space-y-2.5 text-xs">
+          <div class="flex justify-between items-baseline">
+            <span class="text-slate-400">Radial distance ($r$):</span>
+            <span id="probe-dist" class="monospace font-bold text-slate-100">14.50 Rs</span>
+          </div>
+          <div class="flex justify-between items-baseline">
+            <span class="text-slate-400">Instantaneous speed ($v$):</span>
+            <span id="probe-speed" class="monospace font-bold text-orange-400">0 km/s</span>
+          </div>
+
+          <!-- falling status bar indicator -->
+          <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden mt-1 relative">
+            <div id="probe-bar" class="bg-gradient-to-r from-orange-500 to-red-600 h-full" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gravitational Time Dilation Widget + Mechanical Clock Comparison -->
+      <div class="museum-card rounded-2xl p-5 relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="flex items-center gap-2 mb-4 pb-2 border-b border-white/5">
+          <i data-lucide="clock" class="text-blue-400 w-5 h-5 animate-pulse"></i>
+          <h3 class="text-xs font-bold uppercase tracking-widest text-blue-300">Spacetime dilation monitors</h3>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Simple Clock Dials comparison -->
+          <div class="grid grid-cols-2 gap-4 pb-2 border-b border-white/5">
+            <!-- Deep space clock indicator -->
+            <div class="flex flex-col items-center">
+              <span class="text-[9px] text-slate-400 uppercase font-bold mb-2">Deep Space (Flat)</span>
+              <div class="w-14 h-14 rounded-full border border-blue-500/40 relative flex items-center justify-center bg-black/40">
+                <div id="clock-hand-flat" class="w-0.5 h-6 bg-blue-400 absolute origin-bottom bottom-1/2" style="transform: rotate(0deg);"></div>
+                <div class="w-1.5 h-1.5 rounded-full bg-blue-500 z-10"></div>
+              </div>
+              <div id="far-clock-digital" class="monospace text-xs text-blue-400 font-bold mt-2">00.00s</div>
+            </div>
+            <!-- Dilated observer clock indicator -->
+            <div class="flex flex-col items-center">
+              <span class="text-[9px] text-purple-400 uppercase font-bold mb-2">Local Well (Dilated)</span>
+              <div class="w-14 h-14 rounded-full border border-purple-500/40 relative flex items-center justify-center bg-black/40">
+                <div id="clock-hand-dilated" class="w-0.5 h-6 bg-purple-400 absolute origin-bottom bottom-1/2" style="transform: rotate(0deg);"></div>
+                <div class="w-1.5 h-1.5 rounded-full bg-purple-500 z-10"></div>
+              </div>
+              <div id="near-clock-digital" class="monospace text-xs text-purple-400 font-bold mt-2">00.00s</div>
+            </div>
+          </div>
+
+          <div class="text-xs text-slate-400 leading-relaxed">
+            "1 second near the observer distance equals <span id="dilation-factor-text" class="text-blue-400 font-bold monospace">1.00</span> seconds in flat space far away."
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MIDDLE PANEL: Main Exhibit Visual Simulator (5 Columns) -->
+    <section class="lg:col-span-5 flex flex-col gap-4">
+      <div class="bg-black border border-white/5 rounded-2xl overflow-hidden relative shadow-2xl flex flex-col group">
+        <!-- Overlay Panel Header info -->
+        <div class="absolute top-4 left-4 z-10 bg-black/80 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/10 flex items-center gap-2 shadow-lg">
+          <span class="flex h-2.5 w-2.5 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+          </span>
+          <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest monospace">Interactive Visualization View</span>
+        </div>
+
+        <!-- Scale reference overlay at bottom left -->
+        <div id="scale-overlay" class="absolute bottom-4 left-4 z-10 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-[10px] text-slate-400 monospace shadow-md">
+          Horizon Radius (Rs) = 44.30 km
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="relative w-full aspect-square bg-slate-950 flex items-center justify-center">
+          <canvas id="sim-canvas" class="w-full h-full block cursor-crosshair"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: Live Telemetry Analytics Statistics (3 Columns) -->
+    <section class="lg:col-span-3 flex flex-col gap-6">
+      
+      <!-- Metrics Card panel -->
+      <div class="museum-card rounded-2xl p-5">
+        <div class="flex items-center gap-2 mb-4 pb-3 border-b border-white/5">
+          <i data-lucide="gauge" class="text-blue-400 w-5 h-5 animate-pulse"></i>
+          <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300">Exhibit Telemetry</h2>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Schwarzschild Radius -->
+          <div class="bg-black/35 p-3 rounded-xl border border-white/5">
+            <div class="flex justify-between items-baseline text-[9px] text-slate-500 uppercase font-bold tracking-wider mb-1">
+              <span>Schwarzschild Radius</span>
+              <span class="monospace text-slate-600">2GM/c²</span>
+            </div>
+            <div id="telemetry-rs" class="monospace text-lg font-black text-blue-400">44.30 km</div>
+          </div>
+
+          <!-- Event Horizon Diameter -->
+          <div class="bg-black/35 p-3 rounded-xl border border-white/5">
+            <div class="flex justify-between items-baseline text-[9px] text-slate-500 uppercase font-bold tracking-wider mb-1">
+              <span>Horizon Diameter</span>
+              <span class="monospace text-slate-600">2 * Rs</span>
+            </div>
+            <div id="telemetry-diameter" class="monospace text-lg font-black text-purple-400">88.60 km</div>
+          </div>
+
+          <!-- Escape Velocity at distance r -->
+          <div class="bg-black/35 p-3 rounded-xl border border-white/5">
+            <div class="flex justify-between items-baseline text-[9px] text-slate-500 uppercase font-bold tracking-wider mb-1">
+              <span>Escape Velocity ($v_{esc}$)</span>
+              <span class="monospace text-slate-600">at r</span>
+            </div>
+            <div id="telemetry-vesc" class="monospace text-lg font-black text-amber-400">160,250 km/s</div>
+            <div class="text-[9px] text-slate-500 mt-1" id="telemetry-vesc-percent">53.4% Speed of light</div>
+          </div>
+
+          <!-- Orbital Velocity at distance r -->
+          <div class="bg-black/35 p-3 rounded-xl border border-white/5">
+            <div class="flex justify-between items-baseline text-[9px] text-slate-500 uppercase font-bold tracking-wider mb-1">
+              <span>Orbital Velocity ($v_{orb}$)</span>
+              <span class="monospace text-slate-600">at r</span>
+            </div>
+            <div id="telemetry-vorb" class="monospace text-lg font-black text-emerald-400">113,310 km/s</div>
+            <div class="text-[9px] text-slate-500 mt-1" id="telemetry-vorb-percent">37.8% Speed of light</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Simulator map guide Legend -->
+      <div class="museum-card rounded-2xl p-4 text-xs">
+        <h3 class="font-bold text-slate-300 mb-3 flex items-center gap-1.5">
+          <i data-lucide="layers" class="w-4 h-4 text-blue-400"></i> Simulation Map Legend
+        </h3>
+        <div class="space-y-3">
+          <div class="flex items-start gap-2.5">
+            <span class="w-3 h-3 rounded-full bg-black border border-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] flex-shrink-0 mt-0.5"></span>
+            <div>
+              <p class="text-slate-300 font-bold text-[11px]">Singularity Core ($r \le R_s$)</p>
+              <p class="text-[10px] text-slate-500">Unescapable central zone of black hole.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-2.5">
+            <span class="w-3 h-3 rounded-full border border-amber-500/50 border-dashed flex-shrink-0 mt-0.5"></span>
+            <div>
+              <p class="text-slate-300 font-bold text-[11px]">Photon Sphere ($r = 1.5 R_s$)</p>
+              <p class="text-[10px] text-slate-500">Where gravity is strong enough to force photons to orbit.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-2.5">
+            <span class="w-3 h-3 rounded-full border border-purple-500/50 border-dashed flex-shrink-0 mt-0.5"></span>
+            <div>
+              <p class="text-slate-300 font-bold text-[11px]">Observer Deck ($r$)</p>
+              <p class="text-[10px] text-slate-500">Current platform for time-dilation calculations.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Educational Exhibit Explanations Guide (At bottom for easy reading) -->
+  <section id="manual-section" class="max-w-7xl w-full mx-auto px-4 md:px-6 my-6">
+    <div class="museum-card rounded-2xl p-6 md:p-8 shadow-xl">
+      <div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/5">
+        <i data-lucide="book-open" class="text-blue-400 w-6 h-6 animate-pulse"></i>
+        <h2 class="text-lg md:text-xl font-bold uppercase tracking-wider text-slate-200">Interactive Science Manual</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+        <!-- Topic 1 -->
+        <div class="bg-black/30 border border-white/5 p-4 rounded-xl">
+          <h3 class="text-blue-400 font-bold flex items-center gap-2 mb-2">
+            <i data-lucide="sparkles" class="w-4.5 h-4.5"></i> Schwarzschild Radius
+          </h3>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Derived by German physicist Karl Schwarzschild, this represents the boundary radius of a spherical, non-rotating mass where escape velocity equals light speed. If an object is squeezed smaller than this radius, it collapses into a black hole.
+          </p>
+        </div>
+        <!-- Topic 2 -->
+        <div class="bg-black/30 border border-white/5 p-4 rounded-xl">
+          <h3 class="text-rose-400 font-bold flex items-center gap-2 mb-2">
+            <i data-lucide="aperture" class="w-4.5 h-4.5"></i> Event Horizons
+          </h3>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Often called the "Point of No Return". Inside the horizon, the warp of spacetime is so radical that any path leading outwards is literally deleted from the laws of physics. Not even photons of light possess enough velocity to escape.
+          </p>
+        </div>
+        <!-- Topic 3 -->
+        <div class="bg-black/30 border border-white/5 p-4 rounded-xl">
+          <h3 class="text-purple-400 font-bold flex items-center gap-2 mb-2">
+            <i data-lucide="clock-arrow-down" class="w-4.5 h-4.5"></i> Time Dilation
+          </h3>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Einstein's General Relativity shows that gravity warps time. A clock deeper in a gravitational well ticks slower compared to a clock in deep empty space. Right at the Event Horizon, time dilation approaches infinity, appearing to stop.
+          </p>
+        </div>
+        <!-- Topic 4 -->
+        <div class="bg-black/30 border border-white/5 p-4 rounded-xl">
+          <h3 class="text-amber-400 font-bold flex items-center gap-2 mb-2">
+            <i data-lucide="arrow-up-right" class="w-4.5 h-4.5"></i> Escape Velocity
+          </h3>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            The minimal radial speed required to permanently break away from a gravity source without thrusting. As distance $r$ to the singularity decreases, required escape speed grows. At the event horizon, escape speed reaches the speed of light.
+          </p>
+        </div>
+        <!-- Topic 5 -->
+        <div class="bg-black/30 border border-white/5 p-4 rounded-xl">
+          <h3 class="text-emerald-400 font-bold flex items-center gap-2 mb-2">
+            <i data-lucide="refresh-cw" class="w-4.5 h-4.5"></i> Orbital Motion
+          </h3>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Stable circular orbits occur where a body's angular centripetal speed matches gravity's pull. Closer orbits demand extremely fast orbital speeds to avoid plummeting. Inside the Photon Sphere ($r < 1.5 R_s$), circular orbits are impossible.
+          </p>
+        </div>
+        <!-- Topic 6 -->
+        <div class="bg-black/30 border border-white/5 p-4 rounded-xl">
+          <h3 class="text-indigo-400 font-bold flex items-center gap-2 mb-2">
+            <i data-lucide="network" class="w-4.5 h-4.5"></i> Photon Rings & Accretion
+          </h3>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Photons are bent so heavily near the Event Horizon that they orbit in a perfect sphere at $r=1.5 R_s$. Active Accretion Disks consist of gas spiraling inward, glowing brilliantly from friction and extreme gravitational acceleration.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Lab Footer -->
+  <footer class="border-t border-white/5 bg-black/60 py-6 text-center text-xs text-slate-500 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      <p>Astronomical Gravity Laboratory &copy; 2026. Designed for physics instruction and visual exploration.</p>
+      <div class="flex gap-4">
+        <a href="#manual-section" class="hover:text-slate-300 transition">Spacetime Mechanics</a>
+        <a href="#manual-section" class="hover:text-slate-300 transition">Schwarzschild Geometries</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // --- Constant Definitions ---
+    const C = 299792.458; // Speed of light in km/s
+    const RS_CONVERSION_FACTOR = 2.9532; // ~2.9532 km per Solar Mass for Schwarzschild Radius
+
+    // --- State Structure ---
+    let state = {
+      mass: 15,            // In Solar Masses (1-100)
+      distance: 3.5,       // In Rs units (1.1 - 15.0)
+      particleCount: 30,   // Active background orbiting objects
+      simSpeed: 1.0,       // Simulator speed scale factor
+      drawTrails: true,    // Draw orbit paths/trails
+      showAccretionDisk: true, // Render accretion disk particles
+      farTime: 0.0,        // Coordinates far space clock
+      nearTime: 0.0,       // Local dilated observer clock
+      photonRingFlash: 0.0 // Temporal bloom factor on photon ring
+    };
+
+    // Lists for particles
+    let stars = [];
+    let orbits = [];
+    let accretionParticles = [];
+    let activeProbes = []; // active falling probes
+
+    // Canvas references
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // UI Input Bindings
+    const massSlider = document.getElementById('mass-slider');
+    const distSlider = document.getElementById('dist-slider');
+    const objectsSlider = document.getElementById('objects-slider');
+    const speedSlider = document.getElementById('speed-slider');
+
+    const massLabel = document.getElementById('mass-lbl');
+    const distLabel = document.getElementById('dist-lbl');
+    const objectsLabel = document.getElementById('objects-lbl');
+    const speedLabel = document.getElementById('speed-lbl');
+
+    // Stats View Bindings
+    const telemetryRs = document.getElementById('telemetry-rs');
+    const telemetryDiameter = document.getElementById('telemetry-diameter');
+    const telemetryVesc = document.getElementById('telemetry-vesc');
+    const telemetryVescPercent = document.getElementById('telemetry-vesc-percent');
+    const telemetryVorb = document.getElementById('telemetry-vorb');
+    const telemetryVorbPercent = document.getElementById('telemetry-vorb-percent');
+    const scaleOverlay = document.getElementById('scale-overlay');
+
+    // Clocks Digital
+    const farClockDigital = document.getElementById('far-clock-digital');
+    const nearClockDigital = document.getElementById('near-clock-digital');
+    const dilationFactorText = document.getElementById('dilation-factor-text');
+
+    // Clocks Analog Hands
+    const handFlat = document.getElementById('clock-hand-flat');
+    const handDilated = document.getElementById('clock-hand-dilated');
+
+    // Probe Drop HUD
+    const telemetryCard = document.getElementById('telemetry-card');
+    const probeDist = document.getElementById('probe-dist');
+    const probeSpeed = document.getElementById('probe-speed');
+    const probeBar = document.getElementById('probe-bar');
+    const probeStatus = document.getElementById('probe-status');
+
+    // Alerts Center
+    const eventLogBanner = document.getElementById('event-log-banner');
+    const bannerText = document.getElementById('banner-text');
+    let bannerResetTimeout;
+
+    function triggerAlert(msg, level = "info") {
+      bannerText.innerText = msg;
+      
+      // Visual feedback color styling on banner
+      if (level === "warning" || level === "alert") {
+        eventLogBanner.className = "bg-red-950/90 border-b border-red-500/30 text-red-200 px-6 py-2.5 text-center text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 transition-all duration-500 max-h-12 overflow-hidden";
+      } else {
+        eventLogBanner.className = "bg-indigo-950/90 border-b border-indigo-500/20 text-indigo-200 px-6 py-2.5 text-center text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 transition-all duration-500 max-h-12 overflow-hidden";
+      }
+
+      if (bannerResetTimeout) clearTimeout(bannerResetTimeout);
+      
+      // Revert banner text after 5s
+      bannerResetTimeout = setTimeout(() => {
+        bannerText.innerText = "Quantum Sensors Online: Relativistic Spacetime simulation tracking active.";
+        eventLogBanner.className = "bg-indigo-950/90 border-b border-indigo-500/20 text-indigo-200 px-6 py-2.5 text-center text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 transition-all duration-500 max-h-12 overflow-hidden";
+      }, 5000);
+    }
+
+    // --- Twinkling Starfield Generator ---
+    function generateStarfield() {
+      stars = [];
+      const numStars = 200;
+      for (let i = 0; i < numStars; i++) {
+        stars.push({
+          x: (Math.random() - 0.5) * 800,
+          y: (Math.random() - 0.5) * 800,
+          size: Math.random() * 1.5 + 0.3,
+          glow: Math.random() * Math.PI, // random sinusoidal phase
+          brightness: Math.random() * 0.7 + 0.3
+        });
+      }
+    }
+
+    // --- Orbiting Particle Constructor ---
+    class OrbitingBody {
+      constructor(radius, angle = null) {
+        this.radius = radius; // Relative to current Rs
+        this.angle = angle !== null ? angle : Math.random() * Math.PI * 2;
+        this.size = Math.random() * 2.2 + 1.2;
+        this.color = this.getRandomRelativisticColor();
+        this.history = [];
+        this.historyLimit = 30; // Increased trail length for clearer paths
+      }
+
+      getRandomRelativisticColor() {
+        const palettes = [
+          '#60a5fa',  // Sky Blue
+          '#818cf8',  // Indigo Light
+          '#a78bfa',  // Violet Accent
+          '#34d399',  // Emerald Green
+          '#f472b6'   // Pink Glow
+        ];
+        return palettes[Math.floor(Math.random() * palettes.length)];
+      }
+
+      update(dt) {
+        // Relativistic Keplerian orbital frequency simulation matches: ω = dθ/dt.
+        const angularSpeed = Math.sqrt(1 / Math.pow(this.radius, 3)) * 0.035 * state.simSpeed;
+        this.angle += angularSpeed * dt;
+
+        // Trace paths/trails
+        if (state.drawTrails) {
+          this.history.push({ radius: this.radius, angle: this.angle });
+          if (this.history.length > this.historyLimit) {
+            this.history.shift();
+          }
+        } else {
+          this.history = [];
+        }
+      }
+    }
+
+    // --- Accretion Disk Particle Constructor (High Speed Gas Ring) ---
+    // Simulates Brightness Asymmetry (Doppler Beaming): 
+    // Particles rotating towards the observer on the left (angle near pi) are drawn brighter.
+    class AccretionParticle {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        // Accretion disk ranges between 1.6 Rs and 4.2 Rs
+        this.radius = 1.6 + Math.random() * 2.6;
+        this.angle = Math.random() * Math.PI * 2;
+        this.size = Math.random() * 1.4 + 0.4;
+        
+        // Base temperatures mapped to astronomical colors
+        const rand = Math.random();
+        if (rand < 0.4) {
+          this.baseColor = { r: 249, g: 115, b: 22 };  // Hot Orange
+        } else if (rand < 0.75) {
+          this.baseColor = { r: 239, g: 68, b: 68 };   // Bright Red
+        } else if (rand < 0.9) {
+          this.baseColor = { r: 253, g: 186, b: 116 }; // Golden Yellow
+        } else {
+          this.baseColor = { r: 96, g: 165, b: 250 };  // Ultra-hot Blue-white
+        }
+      }
+
+      update(dt) {
+        // Keplerian velocity
+        const speed = Math.sqrt(1 / Math.pow(this.radius, 3)) * 0.05 * state.simSpeed;
+        this.angle += speed * dt;
+
+        // Visual simulation of gas inflow
+        this.radius -= 0.0012 * state.simSpeed * dt;
+        if (this.radius <= 1.2) {
+          this.reset();
+        }
+      }
+
+      // Doppler Beaming directional color multiplier
+      // Left/Right shift represents plasma rotating towards or away from observer.
+      getColor() {
+        // Boost brightness on the right side (cos(angle) > 0)
+        const dopplerShift = 0.55 + 0.45 * Math.cos(this.angle);
+        const alpha = (0.2 + 0.6 * dopplerShift).toFixed(2);
+        const redBoost = Math.min(255, Math.floor(this.baseColor.r * (0.8 + 0.4 * dopplerShift)));
+        const greenBoost = Math.min(255, Math.floor(this.baseColor.g * (0.8 + 0.4 * dopplerShift)));
+        const blueBoost = Math.min(255, Math.floor(this.baseColor.b * (0.8 + 0.4 * dopplerShift)));
+
+        return `rgba(${redBoost}, ${greenBoost}, ${blueBoost}, ${alpha})`;
+      }
+    }
+
+    // --- Drop Object Simulator Core ---
+    class FallingProbe {
+      constructor() {
+        this.id = Math.random().toString(36).substring(2, 9);
+        this.radius = 14.5; // Starts at safe visual boundary
+        this.angle = Math.random() * Math.PI * 2;
+        this.velocity = 0; 
+        this.color = '#f97316'; // Vivid warning orange
+        this.isCaptured = false;
+        this.history = [];
+        this.historyLimit = 40;
+      }
+
+      update(dt) {
+        if (this.isCaptured) return;
+
+        // Record history for the path trail
+        this.history.push({ radius: this.radius, angle: this.angle });
+        if (this.history.length > this.historyLimit) {
+          this.history.shift();
+        }
+
+        // Absolute physical math coordinates
+        const calculatedVesc = C * Math.sqrt(1.0 / this.radius);
+        this.velocity = calculatedVesc;
+
+        // Accelerate and move closer radial distance
+        const fallIncrement = 0.0035 * state.simSpeed * (calculatedVesc / 30000);
+        this.radius -= fallIncrement * dt;
+
+        // Conservation of angular momentum causes spiral frequency to accelerate inwards
+        this.angle += (0.01 + (1.0 / Math.pow(this.radius, 1.4)) * 0.12) * state.simSpeed * dt;
+
+        // Check Event Horizon crossing point (r = 1.0 Rs)
+        if (this.radius <= 1.0) {
+          this.radius = 1.0;
+          this.isCaptured = true;
+          state.photonRingFlash = 1.0; // Trigger high-bloom pulse on photon ring
+          triggerAlert("Object crossed the event horizon. Spacetime curvature limits broken!", "warning");
+          triggerFlashAnimation();
+        }
+      }
+    }
+
+    // Spawn a brief bright impact screen flash
+    function triggerFlashAnimation() {
+      const flash = document.getElementById('impact-flash');
+      flash.style.opacity = '1';
+      setTimeout(() => {
+        flash.style.opacity = '0';
+      }, 100);
+    }
+
+    // --- Orbiting Dust Managers ---
+    function syncDustParticles() {
+      const targetCount = state.particleCount;
+      if (orbits.length < targetCount) {
+        while (orbits.length < targetCount) {
+          // Re-spaced orbits: Keep orbiting particles at a safe distance from center
+          const radius = 1.8 + Math.random() * 11.7;
+          orbits.push(new OrbitingBody(radius));
+        }
+      } else if (orbits.length > targetCount) {
+        orbits.splice(targetCount);
+      }
+    }
+
+    // Accretion particles initialization
+    function generateAccretionDisk() {
+      accretionParticles = [];
+      const numAccretion = 250; // Boosted count for premium visualization density
+      for (let i = 0; i < numAccretion; i++) {
+        accretionParticles.push(new AccretionParticle());
+      }
+    }
+
+    function clearParticles() {
+      state.particleCount = 0;
+      objectsSlider.value = 0;
+      objectsLabel.innerText = "0";
+      orbits = [];
+      triggerAlert("Background orbit dust cloud cleared.", "info");
+    }
+
+    // --- Drop Probe Operation ---
+    function triggerDrop() {
+      const probe = new FallingProbe();
+      activeProbes.push(probe);
+      
+      // Make telemetry dashboard immediately visible
+      telemetryCard.classList.remove('hidden');
+      triggerAlert("Research probe successfully dropped! Initiating telemetry connection...", "info");
+    }
+
+    // --- Slider Event Listeners ---
+    function setupSliders() {
+      massSlider.addEventListener('input', (e) => {
+        state.mass = parseFloat(e.target.value);
+        calculatePhysicsAndLabels();
+      });
+
+      distSlider.addEventListener('input', (e) => {
+        state.distance = parseFloat(e.target.value);
+        calculatePhysicsAndLabels();
+      });
+
+      objectsSlider.addEventListener('input', (e) => {
+        state.particleCount = parseInt(e.target.value);
+        objectsLabel.innerText = state.particleCount;
+        syncDustParticles();
+      });
+
+      speedSlider.addEventListener('input', (e) => {
+        state.simSpeed = parseFloat(e.target.value);
+        speedLabel.innerText = `${state.simSpeed.toFixed(1)}x`;
+      });
+    }
+
+    // Toggle trails
+    function toggleTrails() {
+      state.drawTrails = !state.drawTrails;
+      const button = document.getElementById('trails-btn');
+      if (state.drawTrails) {
+        button.classList.remove('justify-start', 'bg-slate-700');
+        button.classList.add('justify-end', 'bg-blue-600');
+      } else {
+        button.classList.remove('justify-end', 'bg-blue-600');
+        button.classList.add('justify-start', 'bg-slate-700');
+        orbits.forEach(p => p.history = []);
+      }
+    }
+
+    // Toggle Accretion Disk
+    function toggleAccretionDisk() {
+      state.showAccretionDisk = !state.showAccretionDisk;
+      const button = document.getElementById('disk-btn');
+      if (state.showAccretionDisk) {
+        button.classList.remove('justify-start', 'bg-slate-700');
+        button.classList.add('justify-end', 'bg-blue-600');
+        generateAccretionDisk();
+      } else {
+        button.classList.remove('justify-end', 'bg-blue-600');
+        button.classList.add('justify-start', 'bg-slate-700');
+        accretionParticles = [];
+      }
+    }
+
+    // --- Mathematical Physics Formulations ---
+    function calculatePhysicsAndLabels() {
+      // Schwarzschild Radius: Rs = 2GM/c^2 ~ 2.9532 * M
+      const R_s = RS_CONVERSION_FACTOR * state.mass;
+      const diameter = R_s * 2;
+
+      // Escape Velocity: v_esc = c * sqrt(Rs / r)
+      const v_esc = C * Math.sqrt(1.0 / state.distance);
+      const vescPercent = (v_esc / C) * 100;
+
+      // Circular Orbital Speed: v_orb = c * sqrt(Rs / 2r)
+      const v_orb = C * Math.sqrt(1.0 / (2.0 * state.distance));
+      const vorbPercent = (v_orb / C) * 100;
+
+      // Gravitational Time Dilation Factor: 1 / sqrt(1 - Rs / r)
+      const dilationFactor = 1.0 / Math.sqrt(1.0 - (1.0 / state.distance));
+
+      // Labels Sync
+      massLabel.innerText = `${state.mass} M☉`;
+      distLabel.innerText = `${state.distance.toFixed(2)} Rs`;
+
+      // Stat HUD Outputs
+      telemetryRs.innerText = `${R_s.toFixed(2)} km`;
+      telemetryDiameter.innerText = `${diameter.toFixed(2)} km`;
+      telemetryVesc.innerText = `${Math.round(v_esc).toLocaleString()} km/s`;
+      telemetryVescPercent.innerText = `${vescPercent.toFixed(1)}% Speed of Light (c)`;
+      telemetryVorb.innerText = `${Math.round(v_orb).toLocaleString()} km/s`;
+      telemetryVorbPercent.innerText = `${vorbPercent.toFixed(1)}% Speed of Light (c)`;
+
+      // Time Dilation string outputs
+      dilationFactorText.innerText = dilationFactor.toFixed(3);
+
+      scaleOverlay.innerText = `Horizon Radius (Rs) = ${R_s.toFixed(2)} km | Observer Distance = ${(state.distance * R_s).toFixed(1)} km`;
+    }
+
+    // --- Main Simulator Animation Rendering Loop ---
+    let lastTimestamp = 0;
+
+    function renderSimulator(timestamp) {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const dt = (timestamp - lastTimestamp) / 16.666; // Normalize around 60fps base
+      lastTimestamp = timestamp;
+
+      // Fade rate for the photon flash state
+      if (state.photonRingFlash > 0) {
+        state.photonRingFlash -= 0.04 * dt;
+        if (state.photonRingFlash < 0) state.photonRingFlash = 0;
+      }
+
+      // 1. Wipe Canvas clear
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+
+      // Schwarzschild Shadow size increased by approximately 30% for realistic scale
+      const visualHorizonRadius = (25 + (state.mass / 100) * 85) * 1.30;
+
+      // 2. Slow Background Star Rotation
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(state.farTime * 0.0001 * state.simSpeed);
+      stars.forEach((star) => {
+        star.glow += 0.015 * state.simSpeed * dt;
+        const opacity = star.brightness * (0.5 + Math.sin(star.glow) * 0.5);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.globalAlpha = opacity;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.restore();
+      ctx.globalAlpha = 1.0; // Reset canvas alpha
+
+      // 3. Massive Spacetime Gravitational Glow (Blue-purple radial aura extending far past photon sphere)
+      const glowGrad = ctx.createRadialGradient(centerX, centerY, visualHorizonRadius * 1.1, centerX, centerY, visualHorizonRadius * 6.5);
+      glowGrad.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+      glowGrad.addColorStop(0.2, 'rgba(99, 102, 241, 0.2)');
+      glowGrad.addColorStop(0.5, 'rgba(139, 92, 246, 0.05)');
+      glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = glowGrad;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, visualHorizonRadius * 6.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 4. Continuous Rotating Accretion Disk (Underlying hot plasma bulk layer)
+      if (state.showAccretionDisk) {
+        // Base plasma ring backdrop
+        const diskGrad = ctx.createRadialGradient(centerX, centerY, visualHorizonRadius * 1.5, centerX, centerY, visualHorizonRadius * 4.2);
+        diskGrad.addColorStop(0, 'rgba(239, 68, 68, 0.35)'); // Red-hot inner
+        diskGrad.addColorStop(0.15, 'rgba(249, 115, 22, 0.35)'); // Orange-gold
+        diskGrad.addColorStop(0.45, 'rgba(253, 186, 116, 0.15)'); // Warm yellow-white
+        diskGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        
+        ctx.fillStyle = diskGrad;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, visualHorizonRadius * 4.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Overlay Doppler boosted gas filaments (left is dimmer, right is significantly brighter)
+        accretionParticles.forEach(ap => {
+          ap.update(dt);
+          const px = centerX + Math.cos(ap.angle) * (ap.radius * visualHorizonRadius);
+          const py = centerY + Math.sin(ap.angle) * (ap.radius * visualHorizonRadius);
+          ctx.fillStyle = ap.getColor();
+          ctx.beginPath();
+          ctx.arc(px, py, ap.size, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      }
+
+      // 5. Thin Bright energetic blue-white Photon Ring (At ~1.5 Rs with temporal flare bloom)
+      const pulseFactor = 1.0 + Math.sin(state.farTime * 6) * 0.015;
+      const flashBloom = state.photonRingFlash * 8.0;
+      
+      // Double layer drawing for photon ring high bloom contrast
+      ctx.strokeStyle = `rgba(147, 197, 253, ${0.85 + state.photonRingFlash})`;
+      ctx.lineWidth = 1.8 + flashBloom;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, visualHorizonRadius * 1.5 * pulseFactor, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Intense outer bloom glow
+      ctx.strokeStyle = `rgba(59, 130, 246, ${0.25 + state.photonRingFlash})`;
+      ctx.lineWidth = 7.0 + flashBloom * 2;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, visualHorizonRadius * 1.5 * pulseFactor, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 6. Visual Observer Well Reference Circle (Faint dashed coordinate outline)
+      ctx.strokeStyle = 'rgba(139, 92, 246, 0.12)';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([8, 6]);
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, visualHorizonRadius * state.distance, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]); // Reset line dash styling
+
+      // 7. Update and Draw Orbiting Particles
+      orbits.forEach((p) => {
+        p.update(dt);
+
+        const absolutePixelRadius = p.radius * visualHorizonRadius;
+        const px = centerX + Math.cos(p.angle) * absolutePixelRadius;
+        const py = centerY + Math.sin(p.angle) * absolutePixelRadius;
+
+        // Render Faint, distinct Orbit Trails
+        if (state.drawTrails && p.history.length > 1) {
+          ctx.beginPath();
+          ctx.strokeStyle = p.color;
+          ctx.globalAlpha = 0.12;
+          ctx.lineWidth = 1.1;
+
+          const startX = centerX + Math.cos(p.history[0].angle) * (p.history[0].radius * visualHorizonRadius);
+          const startY = centerY + Math.sin(p.history[0].angle) * (p.history[0].radius * visualHorizonRadius);
+          ctx.moveTo(startX, startY);
+
+          for (let i = 1; i < p.history.length; i++) {
+            const hx = centerX + Math.cos(p.history[i].angle) * (p.history[i].radius * visualHorizonRadius);
+            const hy = centerY + Math.sin(p.history[i].angle) * (p.history[i].radius * visualHorizonRadius);
+            ctx.lineTo(hx, hy);
+          }
+          ctx.stroke();
+          ctx.globalAlpha = 1.0; // Reset
+        }
+
+        // Draw Core Dust Particle
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(px, py, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 8. Update and Draw Active Research Probes
+      let leadingProbe = null;
+      for (let i = activeProbes.length - 1; i >= 0; i--) {
+        const probe = activeProbes[i];
+        probe.update(dt);
+
+        // Keep track of the primary active probe for HUD telemetry view
+        if (!leadingProbe || !leadingProbe.isCaptured) {
+          leadingProbe = probe;
+        }
+
+        const probeVisRadius = probe.radius * visualHorizonRadius;
+        const prX = centerX + Math.cos(probe.angle) * probeVisRadius;
+        const prY = centerY + Math.sin(probe.angle) * probeVisRadius;
+
+        // Draw trailing path history of spiraling geodesics
+        if (probe.history.length > 1) {
+          ctx.beginPath();
+          ctx.strokeStyle = '#f97316';
+          ctx.globalAlpha = 0.18;
+          ctx.lineWidth = 1.5;
+          const hStartX = centerX + Math.cos(probe.history[0].angle) * (probe.history[0].radius * visualHorizonRadius);
+          const hStartY = centerY + Math.sin(probe.history[0].angle) * (probe.history[0].radius * visualHorizonRadius);
+          ctx.moveTo(hStartX, hStartY);
+          for (let h = 1; h < probe.history.length; h++) {
+            const hX = centerX + Math.cos(probe.history[h].angle) * (probe.history[h].radius * visualHorizonRadius);
+            const hY = centerY + Math.sin(probe.history[h].angle) * (probe.history[h].radius * visualHorizonRadius);
+            ctx.lineTo(hX, hY);
+          }
+          ctx.stroke();
+          ctx.globalAlpha = 1.0;
+        }
+
+        // Core visual probe glow: Fades (redshifts) and shrinks as it approaches event horizon
+        const distanceScale = Math.max(0.2, (probe.radius - 1.0) / 13.5);
+        ctx.fillStyle = `rgba(249, 115, 22, ${distanceScale + 0.1})`;
+        ctx.beginPath();
+        ctx.arc(prX, prY, 4.5 * (0.4 + 0.6 * distanceScale), 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pulsing warning outer circle ring
+        ctx.strokeStyle = `rgba(249, 115, 22, ${(0.2 + 0.3 * distanceScale).toFixed(2)})`;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(prX, prY, (8 + Math.sin(state.farTime * 12) * 3) * (0.5 + 0.5 * distanceScale), 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Clean finished captured probes
+        if (probe.isCaptured) {
+          activeProbes.splice(i, 1);
+        }
+      }
+
+      // Sync primary probe metrics in Telemetry HUD
+      if (leadingProbe) {
+        probeDist.innerText = `${leadingProbe.radius.toFixed(2)} Rs`;
+        probeSpeed.innerText = `${Math.round(leadingProbe.velocity).toLocaleString()} km/s`;
+
+        // Progress bar percentage maps distance from 14.5 Rs down to 1.0 Rs
+        const fallProgress = ((14.5 - leadingProbe.radius) / 13.5) * 100;
+        probeBar.style.width = `${Math.min(fallProgress, 100)}%`;
+
+        if (leadingProbe.isCaptured) {
+          probeStatus.innerText = "CAPTURED";
+          probeStatus.className = "monospace text-[10px] bg-red-950 text-red-400 border border-red-900/30 px-2 py-0.5 rounded";
+          
+          // Clear HUD after short delay
+          setTimeout(() => {
+            if (activeProbes.length === 0) {
+              telemetryCard.classList.add('hidden');
+            }
+          }, 3500);
+        } else {
+          probeStatus.innerText = "FALLING";
+          probeStatus.className = "monospace text-[10px] bg-orange-950 text-orange-400 border border-orange-900/30 px-2 py-0.5 rounded";
+        }
+      }
+
+      // 9. Draw Pure Black Hole Shadow (Pure Black Center)
+      ctx.fillStyle = '#000000';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, visualHorizonRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Sharp shadow edge ring glow line
+      ctx.strokeStyle = '#1e1b4b';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, visualHorizonRadius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 10. Time Increments & Gravity Dilation calculation
+      const stepSeconds = 0.016 * state.simSpeed;
+      state.farTime += stepSeconds;
+
+      const currentDilationValue = 1.0 / Math.sqrt(1.0 - (1.0 / state.distance));
+      state.nearTime += (stepSeconds / currentDilationValue);
+
+      // Render Time metrics on HUD
+      farClockDigital.innerText = `${state.farTime.toFixed(2)}s`;
+      nearClockDigital.innerText = `${state.nearTime.toFixed(2)}s`;
+
+      // Update mechanical analog clock dials
+      const rotFlat = (state.farTime * 90) % 360; // 90 degrees per flat second
+      const rotDilated = (state.nearTime * 90) % 360;
+      handFlat.style.transform = `rotate(${rotFlat}deg)`;
+      handDilated.style.transform = `rotate(${rotDilated}deg)`;
+
+      requestAnimationFrame(renderSimulator);
+    }
+
+    // --- Interactive Mouse Particle drops ---
+    function setupCanvasClicks() {
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left - canvas.width / 2;
+        const clickY = e.clientY - rect.top - canvas.height / 2;
+
+        const distancePx = Math.sqrt(clickX * clickX + clickY * clickY);
+        const visualHorizonRadius = (25 + (state.mass / 100) * 85) * 1.30;
+
+        // Convert clicked radial distance in Rs terms
+        const clickedRs = distancePx / visualHorizonRadius;
+
+        // Ensure drop is outside event horizon
+        if (clickedRs > 1.05) {
+          const angle = Math.atan2(clickY, clickX);
+          orbits.push(new OrbitingBody(clickedRs, angle));
+          triggerAlert(`New space dust particle added at orbital coordinate ${clickedRs.toFixed(2)} Rs.`, "info");
+        } else {
+          triggerAlert("Deployment failed: Radial coordinate inside absolute event horizon boundary!", "warning");
+        }
+      });
+    }
+
+    // --- Master Calibration Trigger Reset ---
+    function resetSimulation() {
+      state.mass = 15;
+      state.distance = 3.5;
+      state.simSpeed = 1.0;
+      state.particleCount = 30;
+      state.farTime = 0.0;
+      state.nearTime = 0.0;
+      state.photonRingFlash = 0.0;
+
+      massSlider.value = 15;
+      distSlider.value = 3.5;
+      objectsSlider.value = 30;
+      speedSlider.value = 1.0;
+
+      speedLabel.innerText = "1.0x";
+      objectsLabel.innerText = "30";
+
+      activeProbes = [];
+      telemetryCard.classList.add('hidden');
+
+      generateStarfield();
+      generateAccretionDisk();
+      syncDustParticles();
+      calculatePhysicsAndLabels();
+      triggerAlert("Simulator laboratory metrics completely recalibrated.", "info");
+    }
+
+    // --- Responsive Canvas Rescale ---
+    function scaleCanvas() {
+      const parent = canvas.parentElement;
+      canvas.width = parent.clientWidth;
+      canvas.height = parent.clientHeight;
+    }
+
+    // Window load initialize
+    window.onload = function() {
+      lucide.createIcons();
+      scaleCanvas();
+      
+      generateStarfield();
+      generateAccretionDisk();
+      syncDustParticles();
+      calculatePhysicsAndLabels();
+      setupSliders();
+      setupCanvasClicks();
+
+      requestAnimationFrame(renderSimulator);
+    }
+
+    window.addEventListener('resize', scaleCanvas);
+  </script>
+</body>
+</html>
