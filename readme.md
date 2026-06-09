@@ -2,6 +2,9 @@ Black Hole Explorer — General Relativity & Accretion Simulator
 
 An interactive, premium browser-based educational simulator built to demonstrate the physical mechanics surrounding a static, spherically symmetric black hole under Schwarzschild geometry parameters. Designed like a modern digital science museum exhibit, this tool lets you visualize Einstein's spacetime transformations in real time.
 
+🌐 Live Demo:
+https://nishika-astronomy.github.io/blackhole-explorer/
+
 🌌 High-Fidelity Physics Features
 
 Accretion Doppler Beaming (Brightness Asymmetry):
